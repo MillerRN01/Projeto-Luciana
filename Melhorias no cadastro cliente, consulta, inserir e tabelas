@@ -1,0 +1,157 @@
+// Versão segura da consulta
+function consultarCliente($conn, $nome) {
+    $stmt = $conn->prepare("SELECT * FROM cadastro_cliente WHERE nome_cliente LIKE ?");
+    $nomeBusca = "%" . $nome . "%";
+    $stmt->bind_param("s", $nomeBusca);
+    $stmt->execute();
+    return $stmt->get_result();
+}
+
+<?php
+define('DB_HOST', 'localhost');
+define('DB_USER', 'root');
+define('DB_PASS', '');
+define('DB_NAME', 'mcb');
+
+<?php
+function validarDados($dados) {
+    $dados = trim($dados);
+    $dados = stripslashes($dados);
+    $dados = htmlspecialchars($dados);
+    return $dados;
+}
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Produtos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="my-4">
+            <h1 class="text-center">Cadastro de Produtos</h1>
+        </header>
+        
+        <main>
+            <form method="POST" action="processar_cadastro.php" class="needs-validation" novalidate>
+                <div class="form-group mb-3">
+                    <label for="nome">Nome do Cliente:</label>
+                    <input type="text" id="nome" name="nome" class="form-control" required>
+                    <div class="invalid-feedback">
+                        Por favor, insira um nome válido.
+                    </div>
+                </div>
+                
+                <div class="form-group mb-3">
+                    <label for="quantidade">Quantidade:</label>
+                    <input type="number" id="quantidade" name="quantidade" class="form-control" required min="1">
+                </div>
+                
+                <div class="form-group mb-3">
+                    <label for="valor">Valor Total:</label>
+                    <input type="number" id="valor" name="valor" class="form-control" required step="0.01" min="0">
+                </div>
+                
+                <div class="form-group mb-3">
+                    <label for="data_venda">Data da Venda:</label>
+                    <input type="date" id="data_venda" name="data_venda" class="form-control" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Cadastrar</button>
+            </form>
+        </main>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/validacao.js"></script>
+</body>
+</html>
+
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('.needs-validation');
+    
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        
+        form.classList.add('was-validated');
+    });
+    
+    // Validação do valor
+    const valorInput = document.getElementById('valor');
+    valorInput.addEventListener('input', function() {
+        const valor = parseFloat(this.value);
+        if (valor < 0) {
+            this.value = 0;
+        }
+    });
+});
+
+<?php
+require_once 'config.php';
+require_once 'validacao.php';
+
+try {
+    $conn = conectarBancoDeDados();
+    
+    $nome = validarDados($_POST['nome']);
+    $quantidade = validarDados($_POST['quantidade']);
+    $valor = validarDados($_POST['valor']);
+    $data_venda = validarDados($_POST['data_venda']);
+    
+    $stmt = $conn->prepare("INSERT INTO cadastro_vendas (nome_cliente, quantidade, valor_total, data_venda) VALUES (?, ?, ?, ?)");
+    $stmt->bind_param("sids", $nome, $quantidade, $valor, $data_venda);
+    
+    if ($stmt->execute()) {
+        header("Location: sucesso.php");
+        exit();
+    } else {
+        throw new Exception("Erro ao cadastrar venda");
+    }
+} catch (Exception $e) {
+    error_log($e->getMessage());
+    header("Location: erro.php");
+    exit();
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.alert {
+    margin-top: 20px;
+}
+
+.table {
+    margin-top: 20px;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.alert {
+    margin-top: 20px;
+}
+
+.table {
+    margin-top: 20px;
+}
