@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCB</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #f5f5f5;
+    }
+
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        padding: 40px;
+        width: 250px;
+        height: 100%;
+        background-color: #fff;
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s;
+    }
+
+    .sidebar.show {
+        transform: translateX(0);
+    }
+
+    .sidebar.hide {
+        transform: translateX(-250px);
+    }
+
+    .sidebar-title {
+        padding: 20px;
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+        text-align: left;
+        padding-left: 0;
+    }
+
+    .sidebar-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .sidebar-list li a {
+        color: #333;
+        text-decoration: none;
+        display: block;
+        padding: 15px 20px;
+    }
+
+    .sidebar-list li a:hover {
+        background-color: #f0f0f0;
+        color: #333;
+    }
+
+    .sidebar-toggle {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        padding: 10px;
+        background-color: #fff;
+        border: none;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+    }
+
+    .sidebar-toggle i {
+        font-size: 20px;
+        color: #333;
+    }
+
+    .content {
+        padding: 20px;
+        margin-left: 250px;
+        transition: margin-left 0.3s;
+    }
+
+    .content.show {
+        margin-left: 250px;
+    }
+
+    .content.hide {
+        margin-left: 0;
+    }
+
+    /*teste*/
+    .sidebar-search {
+        padding: 10px;
+        border-bottom: 1px solid #ccc;
+    }
+
+    .sidebar-search input[type="search"] {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+    }
+
+    .sidebar-search button {
+        background-color: #fff;
+        border: none;
+        padding: 10px;
+        cursor: pointer;
+    }
+
+    .sidebar-search button:hover {
+        background-color: #f0f0f0;
+    }
+</style>
+
+<body>
+    <div class="sidebar">
+        <div class="sidebar-search">
+            <input type="search" id="search-input" placeholder="Buscar...">
+            <button id="search-button"><i class="fas fa-search"></i></button>
+            <ul id="search-results" class="sidebar-list"></ul>
+        </div>
+        <ul class="sidebar-list">
+            <li>
+                <a href="vendas.html">
+                    <i class="fas fa-box"></i>Consunta de Vendas
+                </a>
+            </li>
+            <li>
+                <a href="#" data-toggle="collapse" data-target="#cadastrosMenu" aria-expanded="false"
+                    aria-controls="cadastrosMenu">
+                    <i class="fas fa-users"></i>Cadastros
+                </a>
+                <ul class="collapse list-unstyled" id="cadastrosMenu">
+                    <li><a href="categoria.html">Categoria</a></li>
+                    <li><a href="produtos.html">Produtos e Serviços</a></li>
+                    <li><a href="combo.html">Combo de Produtos</a></li>
+                    <li><a href="modificador.html">Modificador</a></li>
+                    <li><a href="clientes.html">Clientes</a></li>
+                    <li><a href="fornecedores.html">Fornecedor</a></li>
+                    <li><a href="vendedores.html">Vendedores</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="pedidos.html">
+                    <i class="fas fa-clipboard-list"></i>Pedidos em abertos
+                </a>
+            </li>
+            <li>
+                <a href="consulta-vendas.html">
+                    <i class="fas fa-search"></i>consulta Vendas
+                </a>
+            </li>
+            <li>
+                <a href="estoque.html">
+                    <i class="fas fa-warehouse"></i>Consultar estoque
+                </a>
+            </li>
+            <li>
+                <a href="relatorios.html">
+                    <i class="fas fa-chart-bar"></i>Relatórios
+                </a>
+            </li>
+            <li>
+                <a href="relatorios-consolidados.html">
+                    <i class="fas fa-chart-pie"></i>Relatórios consolidados
+                </a>
+            </li>
+            <li>
+                <a href="caixa.html">
+                    <i class="fas fa-cash-register"></i>Controle de caixa
+                </a>
+            </li>
+            <li>
+                <a href="fiado.html">
+                    <i class="fas fa-credit-card"></i>Fiado
+                </a>
+            </li>
+            <li>
+                <a href="financeiro.html">
+                    <i class="fas fa-money-bill-wave"></i>Financeiro
+                </a>
+            </li>
+            <li>
+                <a href="configuracoes.html">
+                    <i class="fas fa-cog"></i>Configurações
+                </a>
+            </li>
+            <li>
+                <a href="ajuda.html">
+                    <i class="fas fa-question-circle"></i>Ajuda
+                </a>
+            </li>
+            <li>
+                <a href="logout.html">
+                    <i class="fas fa-sign-out-alt"></i>Logout
+                </a>
+            </li>
+        </ul>
+    </div>
+    <div class="col-md-10 content show">
+        <button class="sidebar-toggle float-left" id="sidebarToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $("#sidebarToggle").click(function () {
+                $(".sidebar").toggleClass("show hide");
+                $(".content").toggleClass("show hide");
+            });
+        });
+
+        //teste//
+        const searchInput = document.getElementById('search-input');
+        const searchButton = document.getElementById('search-button');
+        const searchResults = document.getElementById('search-results');
+
+        const menuItems = document.querySelectorAll('.sidebar-list li a');
+
+        searchButton.addEventListener('click', () => {
+            const searchTerm = searchInput.value.toLowerCase();
+            const filteredMenuItems = menuItems.filter((menuItem) => {
+                const menuItemText = menuItem.textContent.toLowerCase();
+                return menuItemText.includes(searchTerm);
+            });
+
+            searchResults.innerHTML = '';
+            filteredMenuItems.forEach((menuItem) => {
+                const menuItemClone = menuItem.cloneNode(true);
+                searchResults.appendChild(menuItemClone);
+            });
+        });
+        searchInput.addEventListener('input', () => {
+            if (searchInput.value === '') {
+                searchResults.innerHTML = '';
+            }
+        });
+    </script>
+</body>
+
+</html>

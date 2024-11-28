@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"/>
+    <link rel="stylesheet" href="tela_cadastro.css"/>
+    <title>Tela De Cadastro</title>
+  </head>
+  <body>
+    <div class="container">
+      <div class="card">
+        <h1>Cadastrar</h1>
+
+        <div id="msgError"></div>
+        <div id="msgSuccess"></div>
+
+        <form method="post" action="tela_cadastro.php">
+        <div class="label-float">
+          <input type="text" id="nome" placeholder=" " required />
+          <label id="labelNome" name="nome_completo" for="nome">Nome</label>
+        </div>
+
+        <select id="cargo" name="cargo">
+          <option value="" selected disabled hidden>Selecione o seu cargo</option>
+          <option value="" disabled>Selecione o seu cargo</option>
+          <option value="Dono">Dono</option>
+          <option value="Funcionario">Funcionario</option>
+        </select>
+
+        <div class="label-float">
+          <input type="text" id="usuario" placeholder=" " required />
+          <label id="labelUsuario" name="usuario" for="usuario">Usuário</label>
+        </div>
+
+        <div class="label-float">
+          <input type="text" id="email"name="email" placeholder=" " required />
+          <label id="labelEmail" for="email">Email</label>
+        </div>
+
+        <div class="label-float">
+          <input type="text" id="cpf" name="cpf" placeholder=" " required />
+          <label id="labelCpf"for="cpf">CPF</label>
+        </div>
+
+        <div class="label-float">
+          <input type="text" id="telefone" name="telefone" placeholder=" " required />
+          <label id="labelTelefone" for="telefone">Numero de Celular</label>
+        </div>
+
+        <div class="label-float">
+          <input type="text" id="endereco" name="endereco" required />
+          <label id="labelEndereco" for="endereco">Endereço</label>
+        </div>
+
+        <div class="label-float">
+          <input type="password" id="senha" name="senha" required />
+          <label id="labelSenha" for="senha">Senha</label>
+          <i id="verSenha" class="fa fa-eye" aria-hidden="true"></i>
+        </div>
+
+        <div class="label-float">
+          <input type="password" id="confirmSenha" placeholder=" " required />
+          <label id="labelConfirmSenha" for="confirmSenha"
+            >Confirmar Senha</label
+          >
+          <i id="verConfirmSenha" class="fa fa-eye" aria-hidden="true"></i>
+        </div>
+
+        <div class="justify-center">
+          <button onclick="cadastrar()">Cadastrar</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="tela_cadastro.js"></script>
+  </body>
+</html>

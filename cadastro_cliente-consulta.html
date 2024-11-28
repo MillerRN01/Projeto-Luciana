@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro de Produtos</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1 class="text-center">Cadastro de Produtos</h1>
+  </header>
+  <main class="container mt-5">
+    <form method="POST" action="cadastrodeproduto.php">
+      <div class="form-group">
+        <label for="nome">Nome:</label>
+        <input type="text" id="nome" name="nome" class="form-control" placeholder="Digite o nome do Cliente">
+      </div>
+      <button type="submit" class="btn btn-primary">Consultar</button>
+    </form>
+  </main>
+</body>
+
+</html>

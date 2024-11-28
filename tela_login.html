@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+    <link rel="stylesheet" href="tela_login.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="card">
+        <h1>Entrar</h1>
+
+        <div id="msgError"></div>
+
+        <div class="label-float">
+          <input type="text" id="usuario" name="usuario" placeholder="" required />
+          <label id="userLabel" for="usuario">Usuario</label>
+        </div>
+
+        <div class="label-float">
+          <input type="password" id="senha" placeholder="" required />
+          <label id="senhaLabel" for="senha" name="senha">Senha</label>
+          <i class="fa fa-eye" aria-hidden="true"></i>
+        </div>
+
+        <div class="justify-center">
+          <button onclick="entrar()">Entrar</button>
+        </div>
+
+        <div class="justify-center">
+          <hr />
+        </div>
+        <div class="form-check text-start my-3">
+          <input class="form-check-input" type="checkbox" value="remember-me" id="remember-me" />
+          <label class="form-check-label" for="remember-me">
+            Lembre-me
+          </label>
+        </div>
+        <p>
+          Não tem uma conta?
+          <a href="tela_cadastro.html">
+            Cadastre-se
+          </a>
+        </p>
+      </div>
+    </div>
+    <script src="tela_login.js"></script>
+  </body>
+</html>

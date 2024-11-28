@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Consultar de Estoque</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-image: url('imagem_de_fundo.jpg');
+      background-size: cover;
+      background-position: center;
+      color: #333;
+      animation: fadeIn 2s;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .btn-primary {
+      background-color: #337ab7;
+      border-color: #337ab7;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease-in-out;
+    }
+
+    .btn-primary:hover {
+      background-color: #23527c;
+      border-color: #23527c;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .form-group {
+      border: 1px solid #337ab7;
+      padding: 10px;
+      border-radius: 10px;
+    }
+
+    .form-control {
+      border: 1px solid #ccc;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      padding: 10px;
+    }
+
+    .form-control:focus {
+      border-color: #337ab7;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    header {
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      background-color: #337ab7;
+      color: #fff;
+      padding: 10px;
+      text-align: center;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1 class="text-center">Consultar de Estoque</h1>
+  </header>
+  <main class="container mt-5">
+    <form method="POST" action="consulta.php">
+      <div class="form-group">
+        <br> <label for="nome_produto">Produto:</label><br>
+        <input type="text" id="nome_produto" name="nome_produto" class="form-control"
+          placeholder="Digite o nome do Produto">
+      </div>
+      <button type="submit" class="btn btn-primary">
+        <i class="fas fa-search"></i> Consultar
+      </button>
+    </form>
+  </main>
+</body>
+
+</html>
