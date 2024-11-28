@@ -27,3 +27,7 @@ CREATE TABLE enderecos (
     estado VARCHAR(2),
     cep VARCHAR(9)
 );
+
+CREATE INDEX idx_produto ON cadastro_produtos(produto);
+CREATE INDEX idx_data_venda ON cadastro_vendas(data_da_venda);
+CREATE INDEX idx_cpf_cliente ON cadastro_clientes(cpf);
