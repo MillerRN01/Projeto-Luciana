@@ -1,0 +1,29 @@
+ALTER TABLE cadastro_produtos
+ADD FOREIGN KEY (fornecedor) REFERENCES fornecedor(id_fornecedor);
+
+CREATE TABLE movimentacao_estoque (
+    id_movimentacao INT AUTO_INCREMENT PRIMARY KEY,
+    id_produto INT,
+    tipo_movimentacao ENUM('entrada', 'saida'),
+    quantidade INT,
+    data_movimentacao DATETIME,
+    id_funcionario INT,
+    FOREIGN KEY (id_produto) REFERENCES cadastro_produtos(id_compra),
+    FOREIGN KEY (id_funcionario) REFERENCES cadastro_funcionario(id_funcionario)
+);
+
+ALTER TABLE cadastro_vendas
+ADD status_venda ENUM('pendente', 'concluida', 'cancelada') DEFAULT 'pendente',
+ADD created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ADD updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+
+CREATE TABLE enderecos (
+    id_endereco INT AUTO_INCREMENT PRIMARY KEY,
+    logradouro VARCHAR(255),
+    numero VARCHAR(20),
+    complemento VARCHAR(100),
+    bairro VARCHAR(100),
+    cidade VARCHAR(100),
+    estado VARCHAR(2),
+    cep VARCHAR(9)
+);
