@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta de Cliente - MCB</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- DataTables -->
+    <link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <style>
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .table th {
+            background-color: #f8f9fa;
+        }
+        .actions-column {
+            width: 150px;
+        }
+        .search-results {
+            margin-top: 20px;
+        }
+        .alert {
+            margin-top: 20px;
+        }
+        .btn-group .btn {
+            margin: 0 2px;
+        }
+        .tooltip-inner {
+            max-width: 200px;
+        }
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <!-- Loading Spinner -->
+    <div class="loading d-none">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Carregando...</span>
+        </div>
+    </div>
+
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="index.html">Início</a></li>
+                <li class="breadcrumb-item"><a href="consulta_cliente.html">Consulta</a></li>
+                <li class="breadcrumb-item active">Resultados</li>
+            </ol>
+        </nav>
+
+        <?php
+        require_once 'config.php'; // Arquivo com configurações do banco de dados
+        require_once 'functions.php'; // Arquivo com funções auxiliares
+
+        try {
+            $pdo = conectarBD();
+            
+            if (!isset($_POST['nome_cliente']) || empty($_POST['nome_cliente'])) {
+                throw new Exception("Por favor, insira um nome para pesquisar.");
+            }
+
+            $cliente = filter_input(INPUT_POST, 'nome_cliente', FILTER_SANITIZE_STRING);
+            
+            $query = "SELECT c.*, e.logradouro, e.numero, e.complemento, e.bairro, e.cidade, e.estado,
+                            (SELECT COUNT(*) FROM cadastro_vendas v WHERE v.id_clientes = c.id_clientes) as total_compras
+                     FROM cadastro_clientes c 
+                     LEFT JOIN enderecos e ON c.id_endereco = e.id_endereco 
+                     WHERE c.nome_cliente LIKE :nome";
+            
+            $stmt = $pdo->prepare($query);
+            $stmt->execute(['nome' => "%$cliente%"]);
+
+            if ($stmt->rowCount() > 0) {
+                ?>
+                <div class="search-results">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2><i class="fas fa-search"></i> Resultados da Consulta</h2>
+                        <div>
+                            <button class="btn btn-primary" onclick="window.location.href='consulta_cliente.html'">
+                                <i class="fas fa-search"></i> Nova Consulta
+                            </button>
+                            <button class="btn btn-success" onclick="exportarDados()">
+                                <i class="fas fa-file-excel"></i> Exportar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table id="clientesTable" class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>CPF</th>
+                                    <th>Endereço</th>
+                                    <th>E-mail</th>
+                                    <th>Telefone</th>
+                                    <th>Compras</th>
+                                    <th class="actions-column">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                                    $endereco = formatarEndereco($row);
+                                    ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars($row["nome_cliente"]); ?></td>
+                                        <td><?php echo formatarCPF($row["cpf"]); ?></td>
+                                        <td><?php echo htmlspecialchars($endereco); ?></td>
+                                        <td><?php echo htmlspecialchars($row["gmail"]); ?></td>
+                                        <td><?php echo formatarTelefone($row["telefone"]); ?></td>
+                                        <td><?php echo $row["total_compras"]; ?></td>
+                                        <td class="actions-column">
+                                            <div class="btn-group" role="group">
+                                                <button class="btn btn-sm btn-primary" 
+                                                        onclick="editarCliente(<?php echo $row["id_clientes"]; ?>)"
+                                                        data-bs-toggle="tooltip" 
+                                                        title="Editar cliente">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-success" 
+                                                        onclick="novaVenda(<?php echo $row["id_clientes"]; ?>)"
+                                                        data-bs-toggle="tooltip" 
+                                                        title="Nova venda">
+                                                    <i class="fas fa-shopping-cart"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-info" 
+                                                        onclick="verHistorico(<?php echo $row["id_clientes"]; ?>)"
+                                                        data-bs-toggle="tooltip" 
+                                                        title="Ver histórico">
+                                                    <i class="fas fa-history"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <?php
+                                }
+                                ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <?php
+            } else {
+                mostrarAlertaNenhumResultado($cliente);
+            }
+        } catch (Exception $e) {
+            mostrarAlertaErro($e->getMessage());
+        }
+        ?>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // Inicializar DataTables
+        $(document).ready(function() {
+            $('#clientesTable').DataTable({
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/pt-BR.json'
+                }
+            });
+
+            // Inicializar tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl)
+            });
+        });
+
+        function mostrarLoading() {
+            document.querySelector('.loading').classList.remove('d-none');
+        }
+
+        function ocultarLoading() {
+            document.querySelector('.loading').classList.add('d-none');
+        }
+
+        async function editarCliente(id) {
+            mostrarLoading();
+            try {
+                window.location.href = `editar_cliente.php?id=${id}`;
+            } catch (error) {
+                await Swal.fire('Erro', 'Erro ao abrir edição do cliente', 'error');
+                ocultarLoading();
+            }
+        }
+
+        async function novaVenda(id) {
+            mostrarLoading();
+            try {
+                window.location.href = `nova_venda.php?cliente=${id}`;
+            } catch (error) {
+                await Swal.fire('Erro', 'Erro ao iniciar nova venda', 'error');
+                ocultarLoading();
+            }
+        }
+
+        async function verHistorico(id) {
+            mostrarLoading();
+            try {
+                window.location.href = `historico_cliente.php?id=${id}`;
+            } catch (error) {
+                await Swal.fire('Erro', 'Erro ao carregar histórico', 'error');
+                ocultarLoading();
+            }
+        }
+
+        function exportarDados() {
+            // Implementar exportação para Excel
+            Swal.fire({
+                title: 'Exportar dados',
+                text: 'Escolha o formato de exportação',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Excel',
+                cancelButtonText: 'PDF'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Exportar para Excel
+                    window.location.href = 'exportar.php?formato=excel';
+                } else if (result.dismiss === Swal.DismissReason.cancel) {
+                    // Exportar para PDF
+                    window.location.href = 'exportar.php?formato=pdf';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+
+<?php
+define('DB_HOST', 'localhost');
+define('DB_USER', 'root');
+define('DB_PASS', 'root');
+define('DB_NAME', 'mcb');
+
+function conectarBD() {
+    try {
+        $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8", 
+                       DB_USER, 
+                       DB_PASS);
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        return $pdo;
+    } catch(PDOException $e) {
+        throw new Exception("Erro na conexão com o banco de dados: " . $e->getMessage());
+    }
+}
+
+<?php
+function formatarEndereco($row) {
+    return implode(", ", array_filter([
+        $row['logradouro'],
+        $row['numero'],
+        $row['complemento'],
+        $row['bairro'],
+        $row['cidade'],
+        $row['estado']
+    ]));
+}
+
+function formatarCPF($cpf) {
+    $cpf = preg_replace('/[^0-9]/', '', $cpf);
+    return substr($cpf, 0, 3) . '.' . 
+           substr($cpf, 3, 3) . '.' . 
+           substr($cpf, 6, 3) . '-' . 
+           substr($cpf, 9, 2);
+}
+
+function formatarTelefone($telefone) {
+    $telefone = preg_replace('/[^0-9]/', '', $telefone);
+    $len = strlen($telefone);
+    if ($len == 11) {
+        return '(' . substr($telefone, 0, 2) . ') ' . 
+               substr($telefone, 2, 5) . '-' . 
+               substr($telefone, 7);
+    }
+    return $telefone;
+}
+
+function mostrarAlertaNenhumResultado($cliente) {
+    ?>
+    <div class="alert alert-warning" role="alert">
+        <h4 class="alert-heading text-center">
+            <i class="fas fa-exclamation-triangle"></i> Nenhum resultado encontrado
+        </h4>
+        <p class="text-center">Não foram encontrados clientes com o nome "<?php echo htmlspecialchars($cliente); ?>".</p>
+        <hr>
+        <p class="text-center mb-0">
+            <button class="btn btn-primary" onclick="window.location.href='consulta_cliente.html'">
+                <i class="fas fa-search"></i> Nova Consulta
+            </button>
+            <button class="btn btn-success" onclick="window.location.href='cadastro_cliente.html'">
+                <i class="fas fa-user-plus"></i> Cadastrar Novo Cliente
+            </button>
+        </p>
+    </div>
+    <?php
+}
+
+function mostrarAlertaErro($mensagem) {
+    ?>
+    <div class="alert alert-danger" role="alert">
+        <h4 class="alert-heading text-center">
+            <i class="fas fa-exclamation-circle"></i> Erro
+        </h4>
+        <p class="text-center"><?php echo $mensagem; ?></p>
+        <hr>
+        <p class="text-center mb-0">
+            <button class="btn btn-primary" onclick="window.location.href='consulta_cliente.html'">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </button>
+        </p>
+    </div>
+    <?php
+}
+
+  
