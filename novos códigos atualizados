@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Produtos - MCB</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome para ícones -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            background-color: #007bff;
+            color: white;
+            padding: 15px 0;
+            margin-bottom: 30px;
+        }
+        .form-label {
+            font-weight: 600;
+        }
+        .required::after {
+            content: "*";
+            color: red;
+            margin-left: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 class="text-center">Cadastro de Produtos</h1>
+    </div>
+
+    <main class="container">
+        <form method="POST" action="cadastro_produto.php" enctype="multipart/form-data">
+            <!-- Informações Básicas -->
+            <div class="row mb-4">
+                <h4><i class="fas fa-info-circle"></i> Informações Básicas</h4>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="produto" class="form-label required">Nome do Produto</label>
+                        <input type="text" class="form-control" id="produto" name="produto" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="codigo_barras" class="form-label">Código de Barras</label>
+                        <input type="text" class="form-control" id="codigo_barras" name="codigo_barras">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preço e Estoque -->
+            <div class="row mb-4">
+                <h4><i class="fas fa-dollar-sign"></i> Preço e Estoque</h4>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="preco" class="form-label required">Preço</label>
+                        <input type="number" class="form-control" id="preco" name="preco" step="0.01" required>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="quantidade" class="form-label required">Quantidade</label>
+                        <input type="number" class="form-control" id="quantidade" name="quantidade" required>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="estoque_minimo" class="form-label">Estoque Mínimo</label>
+                        <input type="number" class="form-control" id="estoque_minimo" name="estoque_minimo">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categoria e Fornecedor -->
+            <div class="row mb-4">
+                <h4><i class="fas fa-tags"></i> Categoria e Fornecedor</h4>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="id_categoria" class="form-label required">Categoria</label>
+                        <select class="form-select" id="id_categoria" name="id_categoria" required>
+                            <option value="">Selecione uma categoria</option>
+                            <!-- Será preenchido via PHP com as categorias do banco -->
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="id_fornecedor" class="form-label">Fornecedor</label>
+                        <select class="form-select" id="id_fornecedor" name="id_fornecedor">
+                            <option value="">Selecione um fornecedor</option>
+                            <!-- Será preenchido via PHP com os fornecedores do banco -->
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Datas -->
+            <div class="row mb-4">
+                <h4><i class="fas fa-calendar"></i> Datas</h4>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="data_produto" class="form-label required">Data de Entrada</label>
+                        <input type="date" class="form-control" id="data_produto" name="data_produto" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="vencimento_produto" class="form-label">Data de Vencimento</label>
+                        <input type="date" class="form-control" id="vencimento_produto" name="vencimento_produto">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Imagens -->
+            <div class="row mb-4">
+                <h4><i class="fas fa-images"></i> Imagens</h4>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="foto_produto" class="form-label">Foto do Produto</label>
+                        <input type="file" class="form-control" id="foto_produto" name="foto_produto" accept="image/*">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="foto_comprovante" class="form-label">Comprovante de Compra</label>
+                        <input type="file" class="form-control" id="foto_comprovante" name="foto_comprovante" accept="image/*">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botões -->
+            <div class="row mt-4">
+                <div class="col-12 text-center">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-save"></i> Cadastrar Produto
+                    </button>
+                    <button type="reset" class="btn btn-secondary btn-lg">
+                        <i class="fas fa-undo"></i> Limpar
+                    </button>
+                </div>
+            </div>
+        </form>
+    </main>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Validação do formulário
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const preco = document.getElementById('preco').value;
+            const quantidade = document.getElementById('quantidade').value;
+
+            if (preco <= 0) {
+                e.preventDefault();
+                alert('O preço deve ser maior que zero!');
+            }
+
+            if (quantidade <= 0) {
+                e.preventDefault();
+                alert('A quantidade deve ser maior que zero!');
+            }
+        });
+    </script>
+</body>
+</html>
+
+<?php
+// Configurações do banco de dados
+$host = 'localhost';
+$dbname = 'mcb';
+$username = 'root';
+$password = 'sua_senha';
+
+try {
+    // Conexão com o banco de dados
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        // Processar imagens
+        $foto_produto = null;
+        $foto_comprovante = null;
+
+        if (isset($_FILES['foto_produto']) && $_FILES['foto_produto']['error'] == 0) {
+            $foto_produto = file_get_contents($_FILES['foto_produto']['tmp_name']);
+        }
+
+        if (isset($_FILES['foto_comprovante']) && $_FILES['foto_comprovante']['error'] == 0) {
+            $foto_comprovante = file_get_contents($_FILES['foto_comprovante']['tmp_name']);
+        }
+
+        // Preparar e executar a query
+        $sql = "INSERT INTO cadastro_produtos (
+            produto, codigo_barras, preco, data_produto, quantidade,
+            estoque_minimo, id_fornecedor, id_categoria, vencimento_produto,
+            foto_produto, foto_comprovante
+        ) VALUES (
+            :produto, :codigo_barras, :preco, :data_produto, :quantidade,
+            :estoque_minimo, :id_fornecedor, :id_categoria, :vencimento_produto,
+            :foto_produto, :foto_comprovante
+        )";
+
+        $stmt = $pdo->prepare($sql);
+        
+        $stmt->execute([
+            ':produto' => $_POST['produto'],
+            ':codigo_barras' => $_POST['codigo_barras'],
+            ':preco' => $_POST['preco'],
+            ':data_produto' => $_POST['data_produto'],
+            ':quantidade' => $_POST['quantidade'],
+            ':estoque_minimo' => $_POST['estoque_minimo'],
+            ':id_fornecedor' => $_POST['id_fornecedor'],
+            ':id_categoria' => $_POST['id_categoria'],
+            ':vencimento_produto' => $_POST['vencimento_produto'] ?: null,
+            ':foto_produto' => $foto_produto,
+            ':foto_comprovante' => $foto_comprovante
+        ]);
+
+        echo "<script>
+            alert('Produto cadastrado com sucesso!');
+            window.location.href = 'index.html';
+        </script>";
+    }
+} catch(PDOException $e) {
+    echo "<script>
+        alert('Erro ao cadastrar produto: " . $e->getMessage() . "');
+        window.history.back();
+    </script>";
+}
+?>
