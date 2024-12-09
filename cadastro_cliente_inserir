@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta de Cliente</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .table th {
+            background-color: #f8f9fa;
+        }
+        .actions-column {
+            width: 150px;
+        }
+        .search-results {
+            margin-top: 20px;
+        }
+        .alert {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container">
+        <?php
+        // Configurações do banco de dados
+        $host = "localhost";
+        $username = "root";
+        $password = "root";
+        $database = "mcb";
+
+        try {
+            // Conectar ao banco de dados usando PDO
+            $pdo = new PDO("mysql:host=$host;dbname=$database;charset=utf8", $username, $password);
+            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+            // Verificar se o nome foi enviado
+            if (!isset($_POST['nome_cliente']) || empty($_POST['nome_cliente'])) {
+                throw new Exception("Por favor, insira um nome para pesquisar.");
+            }
+
+            $cliente = $_POST['nome_cliente'];
+
+            // Preparar e executar a consulta usando prepared statements
+            $query = "SELECT c.*, e.logradouro, e.numero, e.complemento, e.bairro, e.cidade, e.estado 
+                     FROM cadastro_clientes c 
+                     LEFT JOIN enderecos e ON c.id_endereco = e.id_endereco 
+                     WHERE c.nome_cliente LIKE :nome";
+            
+            $stmt = $pdo->prepare($query);
+            $stmt->execute(['nome' => "%$cliente%"]);
+
+            if ($stmt->rowCount() > 0) {
+                ?>
+                <div class="search-results">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2><i class="fas fa-search"></i> Resultados da Consulta</h2>
+                        <button class="btn btn-primary" onclick="window.location.href='consulta_cliente.html'">
+                            <i class="fas fa-search"></i> Nova Consulta
+                        </button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>CPF</th>
+                                    <th>Endereço</th>
+                                    <th>E-mail</th>
+                                    <th>Telefone</th>
+                                    <th class="actions-column">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                                    // Montar endereço completo
+                                    $endereco = implode(", ", array_filter([
+                                        $row['logradouro'],
+                                        $row['numero'],
+                                        $row['complemento'],
+                                        $row['bairro'],
+                                        $row['cidade'],
+                                        $row['estado']
+                                    ]));
+
+                                    echo "<tr>";
+                                    echo "<td>" . htmlspecialchars($row["nome_cliente"]) . "</td>";
+                                    echo "<td>" . htmlspecialchars($row["cpf"]) . "</td>";
+                                    echo "<td>" . htmlspecialchars($endereco) . "</td>";
+                                    echo "<td>" . htmlspecialchars($row["gmail"]) . "</td>";
+                                    echo "<td>" . htmlspecialchars($row["telefone"]) . "</td>";
+                                    echo "<td class='actions-column'>";
+                                    echo "<div class='btn-group' role='group'>";
+                                    echo "<button class='btn btn-sm btn-primary' onclick='editarCliente(" . $row["id_clientes"] . ")'>";
+                                    echo "<i class='fas fa-edit'></i></button>";
+                                    echo "<button class='btn btn-sm btn-success' onclick='novaVenda(" . $row["id_clientes"] . ")'>";
+                                    echo "<i class='fas fa-shopping-cart'></i></button>";
+                                    echo "<button class='btn btn-sm btn-info' onclick='verHistorico(" . $row["id_clientes"] . ")'>";
+                                    echo "<i class='fas fa-history'></i></button>";
+                                    echo "</div>";
+                                    echo "</td>";
+                                    echo "</tr>";
+                                }
+                                ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <?php
+            } else {
+                ?>
+                <div class="alert alert-warning" role="alert">
+                    <h4 class="alert-heading text-center">
+                        <i class="fas fa-exclamation-triangle"></i> Nenhum resultado encontrado
+                    </h4>
+                    <p class="text-center">Não foram encontrados clientes com o nome "<?php echo htmlspecialchars($cliente); ?>".</p>
+                    <hr>
+                    <p class="text-center mb-0">
+                        <button class="btn btn-primary" onclick="window.location.href='consulta_cliente.html'">
+                            <i class="fas fa-search"></i> Nova Consulta
+                        </button>
+                        <button class="btn btn-success" onclick="window.location.href='cadastro_cliente.html'">
+                            <i class="fas fa-user-plus"></i> Cadastrar Novo Cliente
+                        </button>
+                    </p>
+                </div>
+                <?php
+            }
+        } catch (Exception $e) {
+            ?>
+            <div class="alert alert-danger" role="alert">
+                <h4 class="alert-heading text-center">
+                    <i class="fas fa-exclamation-circle"></i> Erro
+                </h4>
+                <p class="text-center"><?php echo $e->getMessage(); ?></p>
+                <hr>
+                <p class="text-center mb-0">
+                    <button class="btn btn-primary" onclick="window.location.href='consulta_cliente.html'">
+                        <i class="fas fa-arrow-left"></i> Voltar
+                    </button>
+                </p>
+            </div>
+            <?php
+        }
+        ?>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function editarCliente(id) {
+            window.location.href = `editar_cliente.php?id=${id}`;
+        }
+
+        function novaVenda(id) {
+            window.location.href = `nova_venda.php?cliente=${id}`;
+        }
+
+        function verHistorico(id) {
+            window.location.href = `historico_cliente.php?id=${id}`;
+        }
+    </script>
+</body>
+</html>
