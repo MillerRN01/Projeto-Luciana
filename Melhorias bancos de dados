@@ -1,25 +1,96 @@
-ALTER TABLE cadastro_produtos
-ADD FOREIGN KEY (fornecedor) REFERENCES fornecedor(id_fornecedor);
+create database mcb;
+use mcb;
 
-CREATE TABLE movimentacao_estoque (
-    id_movimentacao INT AUTO_INCREMENT PRIMARY KEY,
-    id_produto INT,
-    tipo_movimentacao ENUM('entrada', 'saida'),
-    quantidade INT,
-    data_movimentacao DATETIME,
-    id_funcionario INT,
-    FOREIGN KEY (id_produto) REFERENCES cadastro_produtos(id_compra),
-    FOREIGN KEY (id_funcionario) REFERENCES cadastro_funcionario(id_funcionario)
+CREATE TABLE cadastro_clientes (
+    id_clientes INT AUTO_INCREMENT PRIMARY KEY,
+    nomne_cliente VARCHAR(100) NOT NULL,
+    cpf VARCHAR(14) NOT NULL UNIQUE,
+    id_endereco INT,
+    gmail VARCHAR(100) NOT NULL UNIQUE,
+    telefone VARCHAR(15) UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    created_by INT,
+    updated_by INT,
+    FOREIGN KEY (id_endereco)
+        REFERENCES enderecos (id_endereco),
+    FOREIGN KEY (created_by)
+        REFERENCES cadastro_funcionario (id_funcionario),
+    FOREIGN KEY (updated_by)
+        REFERENCES cadastro_funcionario (id_funcionario)
 );
 
-ALTER TABLE cadastro_vendas
-ADD status_venda ENUM('pendente', 'concluida', 'cancelada') DEFAULT 'pendente',
-ADD created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-ADD updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+CREATE TABLE cadastro_funcionario (
+    id_funcionario INT AUTO_INCREMENT PRIMARY KEY,
+    nome_completo VARCHAR(100) NOT NULL,
+    usuario VARCHAR(50) NOT NULL UNIQUE,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    cargo VARCHAR(50),
+    cpf VARCHAR(14) NOT NULL UNIQUE,
+    telefone VARCHAR(15),
+    id_endereco INT,
+    senha VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_endereco)
+        REFERENCES enderecos (id_endereco)
+);
+
+create table cadastro_produtos (
+id_produto int auto_increment primary key,
+produto varchar(255) not null,
+codigo_barras varchar(50) unique,
+preco decimal(10, 2) not null,
+data_produto date not null,
+quantidade int not null,
+estoque_minimo int default 0,
+estoque_maximo int,
+id_fornecedor int,
+id_categoria int,
+vencimento_produto date,
+foto_produto mediumblob,
+foto_comprovante mediumblob,
+status enum('ativo', 'inativo') default 'ativo',
+created_at timestamp default current_timestamp,
+updated_at timestamp default current_timestamp on update current_timestamp,
+foreign key (id_fornecedor) references fornecedor(id_fornecedor),
+foreign key (id_categoria) references categorias(id_categoria)
+);
+
+CREATE TABLE cadastro_vendas (
+    id_venda INT AUTO_INCREMENT PRIMARY KEY,
+    id_clientes INT,
+    id_funcionario INT,
+    cpf_na_nota VARCHAR(14),
+    forma_pagamento VARCHAR(50) NOT NULL,
+    data_da_venda DATE NOT NULL,
+    numero_nota VARCHAR(50),
+    id_status INT,
+    observacoes TEXT,
+    desconto_total DECIMAL(10 , 2 ) DEFAULT 0,
+    valor_total DECIMAL(10 , 2 ),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_clientes)
+        REFERENCES cadastro_clientes (id_clientes),
+    FOREIGN KEY (id_funcionario)
+        REFERENCES cadastro_funcionario (id_funcionario),
+    FOREIGN KEY (id_status)
+        REFERENCES status_venda (id_status)
+);
+
+CREATE TABLE categorias (
+    id_categoria INT AUTO_INCREMENT PRIMARY KEY,
+    nome_categoria VARCHAR(100) NOT NULL,
+    descricao TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
 
 CREATE TABLE enderecos (
-    id_endereco INT AUTO_INCREMENT PRIMARY KEY,
-    logradouro VARCHAR(255),
+    id_ebdereco INT AUTO_INCREMENT PRIMARY KEY,
+    logradouro VARCHAR(255) NOT NULL,
     numero VARCHAR(20),
     complemento VARCHAR(100),
     bairro VARCHAR(100),
@@ -28,6 +99,64 @@ CREATE TABLE enderecos (
     cep VARCHAR(9)
 );
 
-CREATE INDEX idx_produto ON cadastro_produtos(produto);
-CREATE INDEX idx_data_venda ON cadastro_vendas(data_da_venda);
-CREATE INDEX idx_cpf_cliente ON cadastro_clientes(cpf);
+
+CREATE TABLE fornecedor (
+    id_fornecedor INT AUTO_INCREMENT PRIMARY KEY,
+    nome_fornecedor VARCHAR(100) NOT NULL,
+    cpf_cnpj_fornecedor VARCHAR(20) NOT NULL UNIQUE,
+    email_fornecedor VARCHAR(100) NOT NULL,
+    elefone_fornecedor VARCHAR(15),
+    rg_ie_fornecedor VARCHAR(20),
+    id_endereco INT,
+    isento_icms BOOLEAN DEFAULT 0,
+    optante_pelo_simples_nacional BOOLEAN DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_endereco)
+        REFERENCES enderecos (id_endereco)
+);
+
+
+create index idx_produto on cadastro_produtos(produto);
+create index idx_data_venda on cadastro_vendas(data_da_venda);
+create index idx_cpf_cliente on cadastro_clientes(cpf);
+create index idx_nome_cliente on cadastro_clientes(nome_cliente);
+create index idx_codigo_barras on cadastro_produtos(codigo_barras);
+create index idx_fornecedor_cnpj on fornecedor(cpf_cnpj_fornecedor);
+
+CREATE TABLE itens_vendas (
+    id_item INT AUTO_INCREMENT PRIMARY KEY,
+    id_venda INT,
+    id_produto INT,
+    quantidade INT NOT NULL,
+    preco_unitario DECIMAL(10 , 2 ) NOT NULL,
+    desconto DECIMAL(10 , 2 ) DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_venda)
+        REFERENCES cadastro_vendas (id_venda),
+    FOREIGN KEY (id_produto)
+        REFERENCES cadastro_produtos (id_produto)
+);
+
+
+create table log_alteracoes (
+	id_log int auto_increment primary key,
+    tabela varchar(50) not null,
+    id_registro int not null,
+    tipo_operacao enum('insert', 'update', 'delete') not null,
+    dados_antigos JSON,
+    dados_novos json,
+    id_funcionario int,
+    data_ateracao timestamp default current_timestamp,
+    foreign key (id_funcionario) references cadastro_funcionario(id_funcionario)
+);    
+
+
+
+
+CREATE TABLE status_venda (
+    id_status INT AUTO_INCREMENT PRIMARY KEY,
+    nome_status VARCHAR(50) NOT NULL,
+    descricao TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
