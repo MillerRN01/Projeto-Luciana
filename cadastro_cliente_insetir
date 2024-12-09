@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta de Cliente</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .form-label {
+            font-weight: 600;
+        }
+        .alert {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container">
+        <?php
+        // Configurações do banco de dados
+        $host = "localhost";
+        $username = "root";
+        $password = "";
+        $database = "mcb";
+
+        try {
+            // Conectar ao banco de dados usando PDO
+            $pdo = new PDO("mysql:host=$host;dbname=$database;charset=utf8", $username, $password);
+            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+            // Verificar se o nome foi enviado
+            if (!isset($_POST['nome']) || empty($_POST['nome'])) {
+                throw new Exception("Por favor, insira um nome para pesquisar.");
+            }
+
+            $nome = $_POST['nome'];
+
+            // Preparar e executar a consulta usando prepared statements
+            $query = "SELECT id_clientes, nome_cliente FROM cadastro_clientes WHERE nome_cliente LIKE :nome";
+            $stmt = $pdo->prepare($query);
+            $stmt->execute(['nome' => "%$nome%"]);
+
+            if ($stmt->rowCount() > 0) {
+                ?>
+                <div class="mt-4">
+                    <h2 class="text-center mb-4">Registro de Venda</h2>
+                    <form method="post" action="registrar_venda.php" class="needs-validation" novalidate>
+                        <!-- Seleção do Cliente -->
+                        <div class="mb-3">
+                            <label for="cliente" class="form-label">Cliente</label>
+                            <select name="cliente" id="cliente" class="form-select" required>
+                                <option value="">Selecione um cliente</option>
+                                <?php
+                                while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                                    echo "<option value='" . $row["id_clientes"] . "'>" . htmlspecialchars($row["nome_cliente"]) . "</option>";
+                                }
+                                ?>
+                            </select>
+                            <div class="invalid-feedback">Por favor, selecione um cliente.</div>
+                        </div>
+
+                        <!-- Produtos -->
+                        <div class="mb-3">
+                            <label for="produto" class="form-label">Produto</label>
+                            <select name="produto" id="produto" class="form-select" required>
+                                <option value="">Selecione um produto</option>
+                                <?php
+                                $produtos = $pdo->query("SELECT id_produto, produto, preco FROM cadastro_produtos WHERE status = 'ativo'");
+                                while ($produto = $produtos->fetch(PDO::FETCH_ASSOC)) {
+                                    echo "<option value='" . $produto["id_produto"] . "' data-preco='" . $produto["preco"] . "'>" 
+                                         . htmlspecialchars($produto["produto"]) . " - R$ " . number_format($produto["preco"], 2, ',', '.') . "</option>";
+                                }
+                                ?>
+                            </select>
+                            <div class="invalid-feedback">Por favor, selecione um produto.</div>
+                        </div>
+
+                        <!-- Quantidade -->
+                        <div class="mb-3">
+                            <label for="quantidade" class="form-label">Quantidade</label>
+                            <input type="number" class="form-control" id="quantidade" name="quantidade" min="1" required>
+                            <div class="invalid-feedback">Por favor, insira uma quantidade válida.</div>
+                        </div>
+
+                        <!-- Valor Total -->
+                        <div class="mb-3">
+                            <label for="valor_total" class="form-label">Valor Total</label>
+                            <input type="text" class="form-control" id="valor_total" name="valor_total" readonly>
+                        </div>
+
+                        <!-- Data da Venda -->
+                        <div class="mb-3">
+                            <label for="data_venda" class="form-label">Data da Venda</label>
+                            <input type="date" class="form-control" id="data_venda" name="data_venda" 
+                                   value="<?php echo date('Y-m-d'); ?>" required>
+                            <div class="invalid-feedback">Por favor, selecione uma data.</div>
+                        </div>
+
+                        <!-- Forma de Pagamento -->
+                        <div class="mb-3">
+                            <label for="forma_pagamento" class="form-label">Forma de Pagamento</label>
+                            <select name="forma_pagamento" id="forma_pagamento" class="form-select" required>
+                                <option value="">Selecione a forma de pagamento</option>
+                                <option value="dinheiro">Dinheiro</option>
+                                <option value="cartao_credito">Cartão de Crédito</option>
+                                <option value="cartao_debito">Cartão de Débito</option>
+                                <option value="pix">PIX</option>
+                            </select>
+                            <div class="invalid-feedback">Por favor, selecione uma forma de pagamento.</div>
+                        </div>
+
+                        <!-- Botões -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Registrar Venda
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="window.history.back()">
+                                <i class="fas fa-arrow-left"></i> Voltar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <script>
+                    // Cálculo automático do valor total
+                    document.getElementById('quantidade').addEventListener('input', calcularTotal);
+                    document.getElementById('produto').addEventListener('change', calcularTotal);
+
+                    function calcularTotal() {
+                        const quantidade = document.getElementById('quantidade').value;
+                        const produto = document.getElementById('produto');
+                        const preco = produto.options[produto.selectedIndex].dataset.preco;
+                        
+                        if (quantidade && preco) {
+                            const total = quantidade * preco;
+                            document.getElementById('valor_total').value = total.toLocaleString('pt-BR', {
+                                style: 'currency',
+                                currency: 'BRL'
+                            });
+                        }
+                    }
+
+                    // Validação do formulário
+                    (function () {
+                        'use strict'
+                        var forms = document.querySelectorAll('.needs-validation')
+                        Array.prototype.slice.call(forms)
+                            .forEach(function (form) {
+                                form.addEventListener('submit', function (event) {
+                                    if (!form.checkValidity()) {
+                                        event.preventDefault()
+                                        event.stopPropagation()
+                                    }
+                                    form.classList.add('was-validated')
+                                }, false)
+                            })
+                    })()
+                </script>
+                <?php
+            } else {
+                ?>
+                <div class="alert alert-warning" role="alert">
+                    <h4 class="alert-heading text-center">
+                        <i class="fas fa-exclamation-triangle"></i> Nenhum resultado encontrado
+                    </h4>
+                    <p class="text-center mb-0">Não foram encontrados clientes com o nome pesquisado.</p>
+                </div>
+                <script>
+                    setTimeout(function() {
+                        window.location.href = 'consulta_cliente.html';
+                    }, 3000);
+                </script>
+                <?php
+            }
+        } catch (Exception $e) {
+            ?>
+            <div class="alert alert-danger" role="alert">
+                <h4 class="alert-heading text-center">
+                    <i class="fas fa-exclamation-circle"></i> Erro
+                </h4>
+                <p class="text-center mb-0"><?php echo $e->getMessage(); ?></p>
+            </div>
+            <script>
+                setTimeout(function() {
+                    window.location.href = 'consulta_cliente.html';
+                }, 3000);
+            </script>
+            <?php
+        }
+        ?>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
